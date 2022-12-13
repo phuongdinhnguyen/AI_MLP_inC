@@ -1,19 +1,9 @@
-#include "MultiDimMatrix.h"
-#include <fstream>
-
-tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> 
-linear_foward(MultiDimArray x, MultiDimArray w, MultiDimArray b)
-{
-    MultiDimArray flattened_x = x.reshapeTo2Dim();
-    MultiDimArray out = flattened_x * w + b;
-
-    auto cache = make_tuple(x,w,b);
-
-    return make_tuple(out, cache);
-}
+#include "MultiDimArray.h"
+tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_foward(MultiDimArray x, MultiDimArray w, MultiDimArray b);
 
 int main()
 {
+    /*
     // trying with 4-dim array
     //MultiDimArray a = MultiDimArray(4,{2,3,2,2});
     // a.reshapeTo2Dim();
@@ -69,15 +59,57 @@ int main()
     // A1.printArr();
     // A2.printArr();
     // A3.printArr();
+    */
 
-    ifstream file("demofile2.txt");
-    double *arr = new double [200];
+    // READ FROM TEXT
+    
+    int num_inputs = 2;
+    int output_dim = 3;
+    MultiDimArray x = MultiDimArray(4, {2,4,5,6});
+    MultiDimArray w = MultiDimArray(2, {120,3});
+    MultiDimArray b = MultiDimArray(1, {3});
 
-    while (!file.eof()){
-        double f;
-        file >> f;
-        cout << f << endl;
-    }
+    x.readFromFile("data_x.txt");
+    w.readFromFile("data_w.txt");
+    b.readFromFile("data_b.txt");
+
+    // x.printArr();
+    // w.printArr();
+    // b.printArr();
+
+    auto linear = linear_foward(x,w,b);
+    MultiDimArray out = MultiDimArray(2, {num_inputs, output_dim});
+    out = get<0>(linear);
+
+    // cout << "out dim = " << out.dim << ", " << out.sub[0] << " " << out.sub[1] << endl;
+    // cout << "out len = " << out.initLength <<  endl;
+    out.printArr();
+
     cout << "Program exited!" << endl;
     return 0;
+}
+
+tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> 
+linear_foward(MultiDimArray x, MultiDimArray w, MultiDimArray b)
+{
+    // cout << "done step 1!\n";
+    // cout << "x dim = " << x.dim << endl;
+    MultiDimArray flattened_x = x.reshapeTo2Dim();
+
+    // cout << "done step 2!\n";
+
+    // cout << "flattened_x test = " << *flattened_x({0,10}) << endl;
+    // cout << "flat x idx = " << flattened_x.INDEX({0,10}) << endl;
+
+    // cout << "flattened_x shape : " << flattened_x.sub[0] << " " << flattened_x.sub[1] << endl;
+    // cout << "w shape           : " << w.sub[0] << " " << w.sub[1] << endl;
+    MultiDimArray out = flattened_x * w + b;
+
+    out.printArr();
+    // cout << out.arr << endl;
+    // b.printArr();
+
+    auto cache = make_tuple(x,w,b);
+
+    return make_tuple(out, cache);
 }

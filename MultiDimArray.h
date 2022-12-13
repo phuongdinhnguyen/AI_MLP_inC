@@ -3,6 +3,7 @@
 #include <vector>
 #include <initializer_list>
 #include <tuple>
+#include <fstream>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ public:
     vector <int> sub;
     int dim = 0;
     int initLength = 1;
-    int *arr = NULL;
+    double *arr = NULL;
 
 public:
     template <typename T>
@@ -25,6 +26,9 @@ public:
 
     // in ra mảng (chỉ áp dụng 2 chiều)
     void printArr();
+
+    // read from files
+    void readFromFile(string _dir);
 
     // tìm chỉ số so với array 1D
     template <typename T>
@@ -40,16 +44,18 @@ public:
     MultiDimArray operator*(MultiDimArray &other);
 
     // nạp chồng toán tử () cho việc truy cập chỉ số mảng nhanh hơn 
-    int* operator()(initializer_list<int> list);
+    double* operator()(initializer_list<int> list);
 
     // nạp chồng toán tử + cho việc cộng từng hàng của ma trận 2 chiều với
     // một mảng một chiều cùng kích thước
     MultiDimArray operator+(MultiDimArray &other);
 
+    // nạp chồng toán tử gán
+    void operator=(MultiDimArray &other);
+
 };
 
-tuple <MultiDimArray, MultiDimArray, MultiDimArray> linear_foward();
-
+tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_foward();
 
 
 //below is my note for this project

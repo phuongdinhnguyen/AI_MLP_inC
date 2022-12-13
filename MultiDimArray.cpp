@@ -1,4 +1,4 @@
-#include "MultiDimMatrix.h"
+#include "MultiDimArray.h"
 
 template <class T>
 MultiDimArray::MultiDimArray(int _numOfDim, initializer_list<T> list)
@@ -10,7 +10,7 @@ MultiDimArray::MultiDimArray(int _numOfDim, initializer_list<T> list)
     else
     {
         dim = _numOfDim;
-        cout << "Num of dim = " << _numOfDim << endl;
+        //cout << "Num of dim = " << _numOfDim << endl;
         
         cout << "MultiDimArr created! Shape of arr: ( ";
         for( auto elem : list )
@@ -23,7 +23,7 @@ MultiDimArray::MultiDimArray(int _numOfDim, initializer_list<T> list)
         cout <<") -> " << initLength << "; " << "size: "<< sub.size() << "\n";
         if (dim == 1) sub.push_back(1);
 
-        arr = new int[initLength];
+        arr = new double[initLength];
         
     }
 
@@ -87,7 +87,7 @@ int MultiDimArray::INDEX(initializer_list<T> list)
     return arrIdx;
 }
 
-int* MultiDimArray::operator()(initializer_list<int> list)
+double* MultiDimArray::operator()(initializer_list<int> list)
 {
     //cout << "arr+this->INDEX(list) = " << arr+this->INDEX(list) << endl;
     //cout << "INDEX(list) = " << INDEX(list) << endl;
@@ -121,14 +121,17 @@ MultiDimArray MultiDimArray::reshapeTo2Dim()
     {
         cout << "Cannot reshape this!" << endl;
     }
-    while (dim > 1){
+    while (tmp.dim > 1){
+        //cout << tmp.dim << endl;
+        //cout << "reshaping...\n";
         rowLength *= tmp.sub[tmp.dim-1];
         tmp.sub.pop_back();
         tmp.dim--; 
     }
+    tmp.dim++;
     //cout << "row length = " << rowLength << endl;
     tmp.sub.push_back(rowLength);
-    //cout << "dim = " << dim << ", " << sub[0] << " " << sub[1] << endl;
+    //cout << "dim = " << tmp.dim << ", " << tmp.sub[0] << " " << tmp.sub[1] << endl;
 
     return tmp;
 }
@@ -169,3 +172,28 @@ MultiDimArray MultiDimArray::operator*(MultiDimArray &other)
     }
 }
 
+void MultiDimArray::operator=(MultiDimArray &other)
+{
+    arr = new double [initLength];
+    
+    for (int i = 0 ; i < other.initLength ; i++)
+    {   
+        *(arr+i) = *(other.arr+i);
+    }
+    *arr = *other.arr;
+
+    initLength = other.initLength;
+    dim = other.dim;
+    sub = other.sub;
+}
+
+void MultiDimArray::readFromFile(string _dir)
+{
+    ifstream file(_dir);
+    double tmp;
+    for (int i = 0 ; i < initLength ; i++)
+    {
+        file >> tmp;
+        arr[i] = tmp;
+    }
+}
