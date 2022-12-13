@@ -1,2 +1,2 @@
-MLP: MLP.cpp MultiDimMatrix.cpp
-	g++ -o MLP MLP.cpp MultiDimMatrix.cpp
+MLP: MLP.cpp MultiDimArray.cpp
+	g++ -o MLP MLP.cpp MultiDimArray.cpp
