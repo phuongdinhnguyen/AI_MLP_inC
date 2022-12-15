@@ -61,29 +61,46 @@ int main()
     // A3.printArr();
     */
 
-    // READ FROM TEXT
-    
-    int num_inputs = 2;
-    int output_dim = 3;
-    MultiDimArray x = MultiDimArray(4, {2,4,5,6});
-    MultiDimArray w = MultiDimArray(2, {120,3});
-    MultiDimArray b = MultiDimArray(1, {3});
 
-    x.readFromFile("data_x.txt");
-    w.readFromFile("data_w.txt");
-    b.readFromFile("data_b.txt");
+    /*-------Test the linear_foward() function!-------*/
+    // // READ FROM TEXT
+    // int num_inputs = 2;
+    // int output_dim = 3;
+    // MultiDimArray x = MultiDimArray(4, {2,4,5,6});
+    // MultiDimArray w = MultiDimArray(2, {120,3});
+    // MultiDimArray b = MultiDimArray(1, {3});
 
-    // x.printArr();
-    // w.printArr();
-    // b.printArr();
+    // x.readFromFile("data_x.txt");
+    // w.readFromFile("data_w.txt");
+    // b.readFromFile("data_b.txt");
 
-    auto linear = linear_foward(x,w,b);
-    MultiDimArray out = MultiDimArray(2, {num_inputs, output_dim});
-    out = get<0>(linear);
+    // auto linear = linear_foward(x,w,b);
+    // MultiDimArray out = MultiDimArray(2, {num_inputs, output_dim});
+    // out = get<0>(linear);
+    // out.printArr();
 
-    // cout << "out dim = " << out.dim << ", " << out.sub[0] << " " << out.sub[1] << endl;
-    // cout << "out len = " << out.initLength <<  endl;
-    out.printArr();
+    //------Test reshape2-------//
+    // MultiDimArray x = MultiDimArray(2,{10,6});
+    // MultiDimArray x_r = x.reshape2({10,2,3});
+
+    // cout << "After reshape: " << endl;
+    // for (int i = 0 ; i <  x_r.sub.size() ; i++)
+    // {
+    //     cout << x_r.sub[i] << endl;
+    // }
+
+    //------Test reshape2 with array insert-------//
+    MultiDimArray x = MultiDimArray(2,{10,6});
+    // vector <int> num_example{10,2,3};
+    // cout << "Size of example: " << sizeof(num_example) << endl;
+    MultiDimArray y = MultiDimArray(3,{10,2,3});
+    MultiDimArray x_r = x.reshape(y.shape());
+    cout << "After reshape: " << endl;
+    for (int i = 0 ; i <  x_r.sub.size() ; i++)
+    {
+        cout << x_r.sub[i] << endl;
+    }
+
 
     cout << "Program exited!" << endl;
     return 0;
@@ -92,24 +109,30 @@ int main()
 tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> 
 linear_foward(MultiDimArray x, MultiDimArray w, MultiDimArray b)
 {
-    // cout << "done step 1!\n";
-    // cout << "x dim = " << x.dim << endl;
     MultiDimArray flattened_x = x.reshapeTo2Dim();
-
-    // cout << "done step 2!\n";
-
-    // cout << "flattened_x test = " << *flattened_x({0,10}) << endl;
-    // cout << "flat x idx = " << flattened_x.INDEX({0,10}) << endl;
-
-    // cout << "flattened_x shape : " << flattened_x.sub[0] << " " << flattened_x.sub[1] << endl;
-    // cout << "w shape           : " << w.sub[0] << " " << w.sub[1] << endl;
     MultiDimArray out = flattened_x * w + b;
 
     out.printArr();
-    // cout << out.arr << endl;
-    // b.printArr();
-
     auto cache = make_tuple(x,w,b);
 
     return make_tuple(out, cache);
+}
+
+template <typename T>
+tuple <MultiDimArray,MultiDimArray,MultiDimArray> linear_backward(MultiDimArray dout, T cache)
+{
+    MultiDimArray x = get<0>(cache);
+    MultiDimArray w = get<1>(cache);
+    MultiDimArray b = get<2>(cache);
+
+    int num_examples = x.sub[0];
+    MultiDimArray flattened_x = x.reshapeTo2Dim();
+    MultiDimArray dw = flattened_x.transpose() * dout;
+    MultiDimArray db = ones(num_examples) * dout;
+
+    MultiDimArray w_t = w.transpose();
+    MultiDimArray dx = dout * w_t;
+    dx = dx.reshape(x.shape());
+
+    return make_tuple(dx,dw,db);
 }

@@ -5,6 +5,12 @@
 #include <tuple>
 #include <fstream>
 
+#include <cstdarg>
+#include <utility>
+
+template<class... Args>
+void func3(Args... args);
+
 using namespace std;
 
 #define ROW_COL_IDX(row, col, num_cols) (row*num_cols + col)
@@ -38,6 +44,32 @@ public:
 
     // hàm reshape để duỗi mảng(?)
     void reshape(int _dim);
+    MultiDimArray reshape(initializer_list<int> list);
+    template<class... Args>
+    MultiDimArray reshape(Args... args)
+    {   
+        MultiDimArray tmp = *this;
+    
+        vector <int> list;
+        //(cout << ... << args) << endl;
+        (list.push_back(forward<Args>(args)),...);
+        //cout << list.size();
+
+        vector <int> shape;
+        int length = 1;
+        tmp.dim = list.size();
+        for (int d : list)
+        {
+            length *= d;
+            shape.push_back(d);
+        }
+        tmp.initLength = length;
+        tmp.sub = shape;
+
+        return tmp;
+    }
+    vector<int> shape();
+    MultiDimArray reshape(vector<int> list);
     MultiDimArray reshapeTo2Dim();
     
     // nạp chồng toán tử * cho việc nhân ma trận (2 mảng 2 chiều)
@@ -53,9 +85,18 @@ public:
     // nạp chồng toán tử gán
     void operator=(MultiDimArray &other);
 
+    // tính ma trận chuyển vị
+    MultiDimArray transpose();
 };
 
 tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_foward();
+
+// sinh ra mảng 1 chiều fill toàn số 1
+MultiDimArray ones(int shape);
+
+template<class... Args>
+MultiDimArray reshape4(Args... args);
+
 
 
 //below is my note for this project

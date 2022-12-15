@@ -197,3 +197,68 @@ void MultiDimArray::readFromFile(string _dir)
         arr[i] = tmp;
     }
 }
+
+MultiDimArray MultiDimArray::transpose() 
+{
+    MultiDimArray curArr = *this;
+    MultiDimArray tmp = MultiDimArray(2,{curArr.sub[1],curArr.sub[0]});
+
+    for (int j = 0 ; j < tmp.sub[0] ; j++)
+    for (int i = 0 ; i < tmp.sub[1] ; i++)
+    {
+        *tmp({i,j}) = *curArr({j,i});
+    }
+
+
+    return tmp;
+}
+
+MultiDimArray ones(int shape)
+{
+    MultiDimArray x = MultiDimArray(1,{shape});
+    for (int i = 0 ; i < shape ; i++)
+    {
+        *x({i}) = 1;
+    }
+    return x;
+}
+
+MultiDimArray MultiDimArray::reshape(initializer_list<int> list)
+{   
+    MultiDimArray tmp = *this;
+    vector <int> shape;
+    int length = 1;
+    tmp.dim = list.size();
+    for (int d : list)
+    {
+        length *= d;
+        shape.push_back(d);
+    }
+    tmp.initLength = length;
+    tmp.sub = shape;
+
+    return tmp;
+}
+
+MultiDimArray MultiDimArray::reshape(vector <int> list)
+{   
+    MultiDimArray tmp = *this;
+    vector <int> shape;
+    int length = 1;
+    tmp.dim = list.size();
+    for (int d : list)
+    {
+        length *= d;
+        shape.push_back(d);
+    }
+    tmp.initLength = length;
+    tmp.sub = shape;
+
+    return tmp;
+}
+
+vector<int> MultiDimArray::shape()
+{
+    MultiDimArray tmp = *this;
+    return tmp.sub;
+}
