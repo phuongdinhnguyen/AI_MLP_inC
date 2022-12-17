@@ -8,6 +8,7 @@
 #include <cstdarg>
 #include <utility>
 
+#include <math.h>
 template<class... Args>
 void func3(Args... args);
 
@@ -89,15 +90,15 @@ public:
     MultiDimArray transpose();
 };
 
-tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_foward();
+tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_forward();
 
 // sinh ra mảng 1 chiều fill toàn số 1
 MultiDimArray ones(int shape);
 
-template<class... Args>
-MultiDimArray reshape4(Args... args);
+// hàm exp để.... e mũ tất cả các giá trị của mảng :))))
+MultiDimArray expp(MultiDimArray _ma);
 
-
+MultiDimArray sum(MultiDimArray _ma);
 
 //below is my note for this project
 /*

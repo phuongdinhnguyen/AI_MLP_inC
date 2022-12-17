@@ -1,5 +1,5 @@
 #include "MultiDimArray.h"
-tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_foward(MultiDimArray x, MultiDimArray w, MultiDimArray b);
+tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_forward(MultiDimArray x, MultiDimArray w, MultiDimArray b);
 
 int main()
 {
@@ -62,7 +62,7 @@ int main()
     */
 
 
-    /*-------Test the linear_foward() function!-------*/
+    /*-------Test the linear_forward() function!-------*/
     // // READ FROM TEXT
     // int num_inputs = 2;
     // int output_dim = 3;
@@ -74,7 +74,7 @@ int main()
     // w.readFromFile("data_w.txt");
     // b.readFromFile("data_b.txt");
 
-    // auto linear = linear_foward(x,w,b);
+    // auto linear = linear_forward(x,w,b);
     // MultiDimArray out = MultiDimArray(2, {num_inputs, output_dim});
     // out = get<0>(linear);
     // out.printArr();
@@ -107,7 +107,7 @@ int main()
 }
 
 tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> 
-linear_foward(MultiDimArray x, MultiDimArray w, MultiDimArray b)
+linear_forward(MultiDimArray x, MultiDimArray w, MultiDimArray b)
 {
     MultiDimArray flattened_x = x.reshapeTo2Dim();
     MultiDimArray out = flattened_x * w + b;
@@ -119,7 +119,8 @@ linear_foward(MultiDimArray x, MultiDimArray w, MultiDimArray b)
 }
 
 template <typename T>
-tuple <MultiDimArray,MultiDimArray,MultiDimArray> linear_backward(MultiDimArray dout, T cache)
+tuple <MultiDimArray,MultiDimArray,MultiDimArray> 
+linear_backward(MultiDimArray dout, T cache)
 {
     MultiDimArray x = get<0>(cache);
     MultiDimArray w = get<1>(cache);
@@ -136,3 +137,92 @@ tuple <MultiDimArray,MultiDimArray,MultiDimArray> linear_backward(MultiDimArray 
 
     return make_tuple(dx,dw,db);
 }
+
+template <typename T>
+tuple <T,T> relu_forward(MultiDimArray x)
+{
+    MultiDimArray out = x;
+
+    // Implement: out = np.where(x > 0, x, 0)
+    for (int i = 0 ; i < out.initLength ; i++)
+    {
+        if (out.arr[i] < 0) out.arr[i] = 0;
+    }
+
+    auto cache = x;
+
+    return make_tuple(out,cache)
+}
+
+template <typename T>
+T relu_backward(T dout, T cache)
+{
+    auto x = cache;
+    MultiDimArray mask = dout;
+
+    // Implement: mask = (x > 0).astype(int)
+    for (int i = 0 ; i < mask.initLength ; i++)
+    {
+        if (mask.arr[i] > 0) mask.arr[i] = 1;
+        else mask.arr[i] = 0;
+    }
+
+    MultiDimArray dx = dout * mask
+
+    return dx;
+}
+
+template <typename T>
+T linear_relu_forward(T x, T w, T b)
+{
+    auto a = get<0>linear_forward(x,w,b);
+    auto fc_cache = get<1>linear_forward(x,w,b);
+
+    auto out = get<0>relu_forward(a);
+    auto relu_cache = get<1>relu_forward(a);
+
+    auto cache = make_tuple(fc_cache, relu_cache);
+
+    return make_tuple(out,cache);
+}
+
+template <typename T>
+T linear_relu_backward(T dout, T cache)
+{
+    auto fc_cache = get<0>cache;
+    auto relu_cache = get<1>cache;
+    
+    auto da = relu_backward(dout, relu_cache);
+    auto dx = get<0>linear_backward(da, fc_cache);
+    auto dw = get<1>linear_backward(da, fc_cache);
+    auto db = get<2>linear_backward(da, fc_cache);
+
+    return make_tuple(dx,dw,db);
+}
+
+template <typename T>
+T softmax_loss(MultiDimArray _logits, MultiDimArray y)
+{
+    MultiDimArray logits = _logits;
+    
+    // Implement: logits -= np.max(logits,axis=1,keepdims=True)
+    for (int i = 0 ; i < logits.sub[0] ; i++)
+    {
+        double row_max = *logits({i,0});
+        for (int j = 0 ; j < logits.sub[1] ; j++)
+        {
+            if (row_max < (*logits({i,j}))) row_max = *logits({i,j});
+        }
+
+        for (int j = 0 ; j < logits.sub[1] ; j++)
+        {
+            *logits({i,j}) = *logits({i,j}) - row_max;
+        }
+    }
+
+    auto exp = expp(logits);
+
+
+}
+
+

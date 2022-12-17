@@ -262,3 +262,33 @@ vector<int> MultiDimArray::shape()
     MultiDimArray tmp = *this;
     return tmp.sub;
 }
+
+MultiDimArray expp(MultiDimArray _ma)
+{
+    MultiDimArray res = _ma;
+
+    for (int i = 0 ; i < res.initLength ; i++)
+    {
+        res.arr[i] = exp(res.arr[i]);
+    }
+
+    return res;
+}
+
+MultiDimArray sum(MultiDimArray _ma, int axis = 1)
+{
+    MultiDimArray tmp = _ma;
+    MultiDimArray res = MultiDimArray(1,{tmp.sub[0]});
+
+    for (int i = 0 ; i < tmp.sub[0] ; i++)
+    {
+        double sum_row = 0;
+        for (int j = 0 ; j < tmp.sub[1] ; j++)
+        {
+            sum_row += *tmp({i,j});
+        }
+        res.arr[0] = sum_row;
+    }
+
+    return res;
+}
