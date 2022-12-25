@@ -212,7 +212,8 @@ linear_relu_backward(MultiDimArray dout, T cache)
 }
 
 template <typename T>
-T softmax_loss(MultiDimArray _logits, MultiDimArray y)
+tuple <MultiDimArray, MultiDimArray> 
+softmax_loss(MultiDimArray _logits, MultiDimArray y)
 {
     MultiDimArray logits = _logits;
     
@@ -243,6 +244,55 @@ T softmax_loss(MultiDimArray _logits, MultiDimArray y)
         }
     }
 
+    for (int i = 0 ; i < probs.sub[0] ; i++)
+    {
+        for (int j = 0 ; j < probs.sub[1] ; j++)
+        *(probs({i,j})) = *(probs({i,j})) / *(exp({i}));
+    }
+
+    // Implement: loss = -np.log(probs[range(len(y)), y])
+    auto loss = y;
+    for (int i = 0 ; i < loss.sub[0] ; i++)
+    {
+        *(loss({i})) = log(*(probs({i,*(y({i}))})));
+    }
+
+    // Implement: loss = np.mean(loss)
+    double loss_sum = 0;
+    for (int i = 0 ; i < loss.sub[0] ; i++)
+    {
+        loss_sum += *loss({i});
+    }
+
+    for (int i = 0 ; i < loss.sub[0] ; i++)
+    {
+        *loss({i}) = *loss({i}) / loss_sum;
+    }
+
+    // Implement: probs[range(len(y)), y] -= 1
+    for (int i = 0 ; i < y.sub[0] ; i++)
+    {
+        *(probs({i,*(y({i}))})) = *(probs({i,*(y({i}))})) - 1;
+    }
+
+    // Implement: dlogits = probs / len(y)
+    auto dlogits = probs;
+    for (int i = 0 ; i < y.initLength ; i++)
+    {
+        dlogits.arr[i] = probs.arr[i] / y.initLength;
+    }
+
+    return make_tuple(loss,dlogits);
 }
 
 
+class TwoLayerNet
+{
+public:
+    int input_dim = 3*32*32;
+    int hidden_dim = 100;
+    int num_classes = 10;
+    double weight_scale = 1e-3;
+    TwoLayerNet();
+
+};
