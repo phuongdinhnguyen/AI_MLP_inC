@@ -46,6 +46,7 @@ public:
     // hàm reshape để duỗi mảng(?)
     void reshape(int _dim);
     MultiDimArray reshape(initializer_list<int> list);
+    
     template<class... Args>
     MultiDimArray reshape(Args... args)
     {   
@@ -78,6 +79,39 @@ public:
 
     // nạp chồng toán tử () cho việc truy cập chỉ số mảng nhanh hơn 
     double* operator()(initializer_list<int> list);
+
+    // nạp chồng toán tử () style numpy (testing) 
+    template <class... Args>
+    double operator[](Args... args)
+    {
+        const auto list = {args...};
+        int idx = 0;
+        int arrIdx = 0;
+
+        for( auto elem : list )
+        {
+            if (dim == 1)
+            {
+                arrIdx = elem;
+                break;
+            }
+            if (elem > sub[idx] - 1)
+            {
+                cout << "Element out of range!" << endl;
+                break;
+            }
+            else
+            {
+                if (idx == dim - 1) arrIdx += elem;
+                else
+                {
+                    arrIdx += elem*sub[idx+1];
+                }
+            }
+            idx++;
+        }
+        return arr[arrIdx];
+    }
 
     // nạp chồng toán tử + cho việc cộng từng hàng của ma trận 2 chiều với
     // một mảng một chiều cùng kích thước

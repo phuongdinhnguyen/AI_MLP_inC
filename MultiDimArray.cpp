@@ -87,6 +87,7 @@ int MultiDimArray::INDEX(initializer_list<T> list)
     return arrIdx;
 }
 
+
 double* MultiDimArray::operator()(initializer_list<int> list)
 {
     //cout << "arr+this->INDEX(list) = " << arr+this->INDEX(list) << endl;
