@@ -22,6 +22,7 @@ public:
     vector <int> sub;
     int dim = 0;
     int initLength = 1;
+    int err[1] = {-99};
     double *arr = NULL;
 
 public:
@@ -38,8 +39,8 @@ public:
     void readFromFile(string _dir);
 
     // tìm chỉ số so với array 1D
-    template <typename T>
-    int INDEX(initializer_list<T> list);
+    // template <typename T>
+    // int INDEX(T list);
 
     // hàm thay đổi giá trị
 
@@ -82,14 +83,17 @@ public:
 
     // nạp chồng toán tử () style numpy (testing) 
     template <class... Args>
-    double operator[](Args... args)
+    double& operator()(Args... args)
     {
-        const auto list = {args...};
+        vector<int> list;
+        (list.push_back(forward<Args>(args)),...);
         int idx = 0;
         int arrIdx = 0;
 
+        // if (list.size() != dim) return err[0];
         for( auto elem : list )
         {
+            // cout << "elem = " << elem << endl;
             if (dim == 1)
             {
                 arrIdx = elem;
@@ -98,11 +102,15 @@ public:
             if (elem > sub[idx] - 1)
             {
                 cout << "Element out of range!" << endl;
+                // return err[0];
                 break;
             }
             else
             {
-                if (idx == dim - 1) arrIdx += elem;
+                if (idx == dim - 1) 
+                {
+                    arrIdx += elem;
+                }
                 else
                 {
                     arrIdx += elem*sub[idx+1];
@@ -139,3 +147,10 @@ MultiDimArray sum(MultiDimArray _ma);
     https://stackoverflow.com/questions/936687/how-do-i-declare-a-2d-array-in-c-using-new
 
 */
+
+
+namespace nc
+{
+    MultiDimArray linspace(double _start, double _stop, double _num);
+    MultiDimArray zeros();
+}

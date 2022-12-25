@@ -102,9 +102,16 @@ int main()
     // }
 
     //------Test array access---------//
-    MultiDimArray x = MultiDimArray(2,{3,4});
-    x.readFromFile("data_test.txt");
-    cout << x[1,3] << endl;
+    // MultiDimArray x = MultiDimArray(2,{3,4});
+    // MultiDimArray y = MultiDimArray(1,{12});
+    // x.readFromFile("data_test.txt");
+    // y.readFromFile("data_test.txt");
+    // x(1,1) = 4;
+    // cout << x(1,1) << endl;
+    // cout << y(9) << endl;
+
+    //------Test linspace function ---//
+    nc::linspace(2.0,3.0,5).printArr();
 
     cout << "Program exited!" << endl;
     return 0;

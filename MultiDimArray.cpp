@@ -20,7 +20,7 @@ MultiDimArray::MultiDimArray(int _numOfDim, initializer_list<T> list)
             initLength *= elem;
             // cout << "aa" << endl;
         }
-        cout <<") -> " << initLength << "; " << "size: "<< sub.size() << "\n";
+        cout <<") -> " << initLength << "; " << "sub size: "<< sub.size() << "\n";
         if (dim == 1) sub.push_back(1);
 
         arr = new double[initLength];
@@ -50,50 +50,50 @@ void MultiDimArray::printArr()
     cout << endl;
 }
 
-template <typename T>
-int MultiDimArray::INDEX(initializer_list<T> list)
-{
-    /*
-        usage: calculate position of array element
-        example:
-            find index of element which position in multidimarray (3,2,3) is (2,0,2)
-            -> index = 2*2*3 + 0*3 + 2 = 14 
-        formula: 
-            multidimarray (d1,d2,d3,...,dn), element(x1,x2,x3,...,xn)
-            -> index = x1*(d2*d3*...*dn) + x2*(d3*d4*...*dn) +... + xn-1 * dn + xn 
-    */
+// template <typename T>
+// int MultiDimArray::INDEX(T list)
+// {
+//     /*
+//         usage: calculate position of array element
+//         example:
+//             find index of element which position in multidimarray (3,2,3) is (2,0,2)
+//             -> index = 2*2*3 + 0*3 + 2 = 14 
+//         formula: 
+//             multidimarray (d1,d2,d3,...,dn), element(x1,x2,x3,...,xn)
+//             -> index = x1*(d2*d3*...*dn) + x2*(d3*d4*...*dn) +... + xn-1 * dn + xn 
+//     */
 
-    int idx = 0;
-    int arrIdx = 0;
+//     int idx = 0;
+//     int arrIdx = 0;
 
-    for( auto elem : list )
-    {
-        if (dim == 1) return elem;
-        if (elem > sub[idx] - 1)
-        {
-            cout << "Element out of range!" << endl;
-            break;
-        }
-        else
-        {
-            if (idx == dim - 1) arrIdx += elem;
-            else
-            {
-                arrIdx += elem*sub[idx+1];
-            }
-        }
-        idx++;
-    }
-    return arrIdx;
-}
+//     for( auto elem : list )
+//     {
+//         if (dim == 1) return elem;
+//         if (elem > sub[idx] - 1)
+//         {
+//             cout << "Element out of range!" << endl;
+//             break;
+//         }
+//         else
+//         {
+//             if (idx == dim - 1) arrIdx += elem;
+//             else
+//             {
+//                 arrIdx += elem*sub[idx+1];
+//             }
+//         }
+//         idx++;
+//     }
+//     return arrIdx;
+// }
 
 
-double* MultiDimArray::operator()(initializer_list<int> list)
-{
-    //cout << "arr+this->INDEX(list) = " << arr+this->INDEX(list) << endl;
-    //cout << "INDEX(list) = " << INDEX(list) << endl;
-    return arr+this->INDEX(list);
-}
+// double* MultiDimArray::operator()(initializer_list<int> list)
+// {
+//     //cout << "arr+this->INDEX(list) = " << arr+this->INDEX(list) << endl;
+//     //cout << "INDEX(list) = " << INDEX(list) << endl;
+//     return arr+this->INDEX(list);
+// }
 
 MultiDimArray MultiDimArray::operator+(MultiDimArray &other)
 {
@@ -107,7 +107,7 @@ MultiDimArray MultiDimArray::operator+(MultiDimArray &other)
         for (int i = 0 ; i < this->sub[0] ; i++)
         {
             for (int j = 0 ; j < this->sub[1] ; j++)
-            *tmp({i,j}) += *other({j});
+            tmp(i,j) += other(j);
         }
         return tmp;
     }
@@ -165,7 +165,7 @@ MultiDimArray MultiDimArray::operator*(MultiDimArray &other)
                 for (int j = 0 ; j < M ; j++)
                 {
                     for (int k = 0 ; k < D ; k++)
-                    *res({i,j}) += (*cur({i,k})) * (*other({k,j}));
+                    res(i,j) += cur(i,k) * other(k,j);
                 }
             }
             return res;
@@ -207,7 +207,7 @@ MultiDimArray MultiDimArray::transpose()
     for (int j = 0 ; j < tmp.sub[0] ; j++)
     for (int i = 0 ; i < tmp.sub[1] ; i++)
     {
-        *tmp({i,j}) = *curArr({j,i});
+        tmp(i,j) = curArr(j,i);
     }
 
 
@@ -219,7 +219,7 @@ MultiDimArray ones(int shape)
     MultiDimArray x = MultiDimArray(1,{shape});
     for (int i = 0 ; i < shape ; i++)
     {
-        *x({i}) = 1;
+        x(i) = 1;
     }
     return x;
 }
@@ -286,10 +286,25 @@ MultiDimArray sum(MultiDimArray _ma, int axis = 1)
         double sum_row = 0;
         for (int j = 0 ; j < tmp.sub[1] ; j++)
         {
-            sum_row += *tmp({i,j});
+            sum_row += tmp(i,j);
         }
         res.arr[0] = sum_row;
     }
 
+    return res;
+}
+
+// namespace nc
+MultiDimArray nc::linspace(double _start, double _stop, double _num)
+{
+    cout << "Start = " << _start << "; Stop = " << _stop << endl;
+    double step = (_stop - _start) / (_num-1);
+    cout << "Step = " << step << endl;
+    MultiDimArray res = MultiDimArray(1,{_num});
+    res(0) = _start;
+    for (int i = 1 ; i < _num ; i++)
+    {
+        res(i) = res(i-1) + step;
+    }
     return res;
 }
