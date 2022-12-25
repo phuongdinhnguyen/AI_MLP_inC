@@ -90,17 +90,21 @@ int main()
     // }
 
     //------Test reshape2 with array insert-------//
-    MultiDimArray x = MultiDimArray(2,{10,6});
+    // MultiDimArray x = MultiDimArray(2,{10,6});
     // vector <int> num_example{10,2,3};
     // cout << "Size of example: " << sizeof(num_example) << endl;
-    MultiDimArray y = MultiDimArray(3,{10,2,3});
-    MultiDimArray x_r = x.reshape(y.shape());
-    cout << "After reshape: " << endl;
-    for (int i = 0 ; i <  x_r.sub.size() ; i++)
-    {
-        cout << x_r.sub[i] << endl;
-    }
+    // MultiDimArray y = MultiDimArray(3,{10,2,3});
+    // MultiDimArray x_r = x.reshape(y.shape());
+    // cout << "After reshape: " << endl;
+    // for (int i = 0 ; i <  x_r.sub.size() ; i++)
+    // {
+    //     cout << x_r.sub[i] << endl;
+    // }
 
+    //------Test array access---------//
+    MultiDimArray x = MultiDimArray(2,{3,4});
+    x.readFromFile("data_test.txt");
+    cout << x[1,3] << endl;
 
     cout << "Program exited!" << endl;
     return 0;
@@ -138,8 +142,7 @@ linear_backward(MultiDimArray dout, T cache)
     return make_tuple(dx,dw,db);
 }
 
-template <typename T>
-tuple <T,T> relu_forward(MultiDimArray x)
+tuple <MultiDimArray, MultiDimArray> relu_forward(MultiDimArray x)
 {
     MultiDimArray out = x;
 
@@ -151,11 +154,11 @@ tuple <T,T> relu_forward(MultiDimArray x)
 
     auto cache = x;
 
-    return make_tuple(out,cache)
+    return make_tuple(out,cache);
 }
 
 template <typename T>
-T relu_backward(T dout, T cache)
+MultiDimArray relu_backward(MultiDimArray dout, MultiDimArray cache)
 {
     auto x = cache;
     MultiDimArray mask = dout;
@@ -167,19 +170,19 @@ T relu_backward(T dout, T cache)
         else mask.arr[i] = 0;
     }
 
-    MultiDimArray dx = dout * mask
+    MultiDimArray dx = dout * mask;
 
     return dx;
 }
 
-template <typename T>
-T linear_relu_forward(T x, T w, T b)
+tuple <MultiDimArray, tuple<tuple<MultiDimArray, MultiDimArray,MultiDimArray>,MultiDimArray>> 
+linear_relu_forward(MultiDimArray x, MultiDimArray w, MultiDimArray b)
 {
-    auto a = get<0>linear_forward(x,w,b);
-    auto fc_cache = get<1>linear_forward(x,w,b);
+    auto a = get<0>(linear_forward(x,w,b));
+    auto fc_cache = get<1>(linear_forward(x,w,b));
 
-    auto out = get<0>relu_forward(a);
-    auto relu_cache = get<1>relu_forward(a);
+    auto out = get<0>(relu_forward(a));
+    auto relu_cache = get<1>(relu_forward(a));
 
     auto cache = make_tuple(fc_cache, relu_cache);
 
@@ -187,15 +190,16 @@ T linear_relu_forward(T x, T w, T b)
 }
 
 template <typename T>
-T linear_relu_backward(T dout, T cache)
+tuple <MultiDimArray, MultiDimArray, MultiDimArray> 
+linear_relu_backward(MultiDimArray dout, T cache)
 {
-    auto fc_cache = get<0>cache;
-    auto relu_cache = get<1>cache;
+    auto fc_cache = get<0>(cache);
+    auto relu_cache = get<1>(cache);
     
     auto da = relu_backward(dout, relu_cache);
-    auto dx = get<0>linear_backward(da, fc_cache);
-    auto dw = get<1>linear_backward(da, fc_cache);
-    auto db = get<2>linear_backward(da, fc_cache);
+    auto dx = get<0>(linear_backward(da, fc_cache));
+    auto dw = get<1>(linear_backward(da, fc_cache));
+    auto db = get<2>(linear_backward(da, fc_cache));
 
     return make_tuple(dx,dw,db);
 }
@@ -220,8 +224,17 @@ T softmax_loss(MultiDimArray _logits, MultiDimArray y)
         }
     }
 
-    auto exp = expp(logits);
+    MultiDimArray exps = expp(logits);
+    MultiDimArray sums = sum(exps);
+    MultiDimArray probs = exps;
 
+    for (int i = 0 ; i < exps.sub[0] ; i++)
+    {
+        for (int j = 0 ; j < logits.sub[1] ; j++)
+        {
+            *probs({i,j}) = *probs({i,j}) / *sums({i});
+        }
+    }
 
 }
 
