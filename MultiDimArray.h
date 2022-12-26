@@ -4,11 +4,14 @@
 #include <initializer_list>
 #include <tuple>
 #include <fstream>
+#include <chrono>
 
 #include <cstdarg>
 #include <utility>
 
 #include <math.h>
+#include <random>
+
 template<class... Args>
 void func3(Args... args);
 
@@ -28,6 +31,9 @@ public:
 public:
     template <typename T>
     MultiDimArray(int _numOfDim, initializer_list<T> list);
+    MultiDimArray(){
+        dim = 0;
+    }
     // ~MultiDimArray();
     // khởi tạo giá trị 0 cho toàn mảng
     void initArray();
@@ -126,10 +132,16 @@ public:
     MultiDimArray operator+(MultiDimArray &other);
 
     // nạp chồng toán tử gán
-    void operator=(MultiDimArray &other);
+    void operator=(const MultiDimArray &other);
 
     // tính ma trận chuyển vị
     MultiDimArray transpose();
+
+    // tính standard deviation
+    double std();
+
+    // in ra shape của mảng
+    void printShape();
 };
 
 tuple<MultiDimArray,tuple <MultiDimArray, MultiDimArray, MultiDimArray>> linear_forward();
@@ -140,7 +152,7 @@ MultiDimArray ones(int shape);
 // hàm exp để.... e mũ tất cả các giá trị của mảng :))))
 MultiDimArray expp(MultiDimArray _ma);
 
-MultiDimArray sum(MultiDimArray _ma);
+MultiDimArray sum(MultiDimArray _ma, int axis);
 
 //below is my note for this project
 /*
@@ -152,5 +164,7 @@ MultiDimArray sum(MultiDimArray _ma);
 namespace nc
 {
     MultiDimArray linspace(double _start, double _stop, double _num);
-    MultiDimArray zeros();
+    MultiDimArray zeros(vector <int> shape);
+    MultiDimArray random_normal(double mean, double stddev, vector <int> shape);
+
 }

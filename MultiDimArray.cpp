@@ -11,7 +11,7 @@ MultiDimArray::MultiDimArray(int _numOfDim, initializer_list<T> list)
     {
         dim = _numOfDim;
         //cout << "Num of dim = " << _numOfDim << endl;
-        
+        if (dim == 1) sub.push_back(1);
         cout << "MultiDimArr created! Shape of arr: ( ";
         for( auto elem : list )
         {
@@ -21,7 +21,7 @@ MultiDimArray::MultiDimArray(int _numOfDim, initializer_list<T> list)
             // cout << "aa" << endl;
         }
         cout <<") -> " << initLength << "; " << "sub size: "<< sub.size() << "\n";
-        if (dim == 1) sub.push_back(1);
+        // if (dim == 1) sub.push_back(1);
 
         arr = new double[initLength];
         
@@ -97,7 +97,7 @@ void MultiDimArray::printArr()
 
 MultiDimArray MultiDimArray::operator+(MultiDimArray &other)
 {
-    if (this->sub[1] != other.sub[0])
+    if (this->sub[1] != other.sub[1])
     {
         cout << "Cannot do plus operator!" << endl;
     }
@@ -147,6 +147,8 @@ MultiDimArray MultiDimArray::operator*(MultiDimArray &other)
     {
         if (this->sub[1] != other.sub[0])
         {
+            // this->printArr(); cout << "sub1:" << this->sub[1] << endl;
+            // other.printArr(); cout << "sub2: " <<other.sub[0] << endl;
             cout << "Cannot multiply. First matrix column is not equal to second matrix row!" << endl;
         }
         else
@@ -173,16 +175,15 @@ MultiDimArray MultiDimArray::operator*(MultiDimArray &other)
     }
 }
 
-void MultiDimArray::operator=(MultiDimArray &other)
+void MultiDimArray::operator=(const MultiDimArray &other)
 {
-    arr = new double [initLength];
-    
+    arr = new double[other.initLength];
     for (int i = 0 ; i < other.initLength ; i++)
     {   
+        // cout << arr+i <<" " << other.arr+i << endl;
         *(arr+i) = *(other.arr+i);
     }
-    *arr = *other.arr;
-
+    // arr = other.arr;
     initLength = other.initLength;
     dim = other.dim;
     sub = other.sub;
@@ -204,8 +205,8 @@ MultiDimArray MultiDimArray::transpose()
     MultiDimArray curArr = *this;
     MultiDimArray tmp = MultiDimArray(2,{curArr.sub[1],curArr.sub[0]});
 
-    for (int j = 0 ; j < tmp.sub[0] ; j++)
-    for (int i = 0 ; i < tmp.sub[1] ; i++)
+    for (int i = 0 ; i < tmp.sub[0] ; i++)
+    for (int j = 0 ; j < tmp.sub[1] ; j++)
     {
         tmp(i,j) = curArr(j,i);
     }
@@ -229,11 +230,21 @@ MultiDimArray MultiDimArray::reshape(initializer_list<int> list)
     MultiDimArray tmp = *this;
     vector <int> shape;
     int length = 1;
+    int idx = 0;
     tmp.dim = list.size();
     for (int d : list)
     {
+        if (d == -1)
+        {
+            int s = 1;
+            for (int i = idx ; i < tmp.sub.size() ; i++)
+            s *= tmp.sub[i];
+            shape.push_back(s);
+            break;
+        }
         length *= d;
         shape.push_back(d);
+        idx++;
     }
     tmp.initLength = length;
     tmp.sub = shape;
@@ -294,17 +305,97 @@ MultiDimArray sum(MultiDimArray _ma, int axis = 1)
     return res;
 }
 
+double MultiDimArray::std()
+{
+    double sum = 0;
+    for (int i = 0 ; i < this->initLength ; i++)
+    {
+        sum+=this->arr[i];
+    }
+    double average = sum / initLength;
+
+    double sum2 = 0;
+    for (int i = 0 ; i < this->initLength ; i++)
+    {
+        double tmp = (this->arr[i]-average);
+        sum2 += tmp*tmp;
+    }
+    double average2 = sum2 / initLength;
+
+    return sqrt(average2);
+}
+
+void MultiDimArray::printShape()
+{
+    vector <int> m_sub = sub;
+    cout << "(";
+    for (auto s : m_sub)
+    {
+        cout << s << " ";
+    }
+    cout << ")\n";
+}
+
 // namespace nc
 MultiDimArray nc::linspace(double _start, double _stop, double _num)
 {
-    cout << "Start = " << _start << "; Stop = " << _stop << endl;
+    // cout << "Start = " << _start << "; Stop = " << _stop << endl;
     double step = (_stop - _start) / (_num-1);
-    cout << "Step = " << step << endl;
+    // cout << "Step = " << step << endl;
     MultiDimArray res = MultiDimArray(1,{_num});
     res(0) = _start;
     for (int i = 1 ; i < _num ; i++)
     {
         res(i) = res(i-1) + step;
     }
+    return res;
+}
+
+MultiDimArray nc::zeros(vector<int> shape)
+{
+    int length = 1;
+    for (auto x: shape)
+    {
+        length *= x;
+    }
+
+    MultiDimArray res = MultiDimArray(1,{length});
+    for (int i = 0 ; i < length ; i++)
+    {   
+        res(i) = 0;
+    }
+
+    return res;
+}
+
+MultiDimArray nc::random_normal(double mean, double stddev, vector<int>shape)
+{
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    default_random_engine generator (seed);
+    normal_distribution<double> distribution(mean, stddev);
+
+    int length = 1;
+    for (auto x: shape)
+    {
+        length *= x;
+    }
+
+    MultiDimArray res = MultiDimArray(1,{length});
+
+    for (int i = 0 ; i < length ; i++)
+    {   
+        res(i) = distribution(generator);
+    }
+
+    // std::mt19937 generator(231);  
+    // for (int i = 0 ; i < length ; i++)
+    // {   
+    //     uint32_t val = generator();
+    //     uint32_t a = val >> 5;
+    //     uint32_t b = val >> 6; 
+    //     double value = (a * 67108864.0 + b) / 9007199254740992.0;
+    //     res(i) = value;
+    // }
+
     return res;
 }
