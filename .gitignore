@@ -1,5 +1,3 @@
 *.exe
 pointer.cpp
 .vscode/
-data_test.txt
-*.txt
